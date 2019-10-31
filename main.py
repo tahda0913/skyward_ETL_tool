@@ -7,7 +7,7 @@ import pprint
 
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('config_files/config.ini')
 
 skyward_driver = config['Skyward_DB']['Driver']
 skyward_hostname = config['Skyward_DB']['HOST']
@@ -56,69 +56,51 @@ if __name__ == '__main__':
     clean_adm_table_names = clean_list_items(adm_tables)
 
     for i, table in enumerate(sky_tables):
-        if i == 5:
-            col_tuples, col_names = ETL_funcs.retrieve_table_columns(sky_cursor, table)
-            adm_table_name = clean_adm_table_names[i]
-            bypass_dict = ETL_funcs.create_bypass_dict(adm_table_name, bypass_config_path)
+        col_tuples, col_names = ETL_funcs.retrieve_table_columns(sky_cursor, table)
+        adm_table_name = clean_adm_table_names[i]
+        bypass_dict = ETL_funcs.create_bypass_dict(adm_table_name, bypass_config_path)
 
-            drop_string = ETL_funcs.create_table_drop_string('rpa',
+        drop_string = ETL_funcs.create_table_drop_string('rpa',
+                                                         'sky',
+                                                         adm_table_name)
+
+        create_string = ETL_funcs.create_table_create_string('rpa',
                                                              'sky',
-                                                             adm_table_name)
+                                                             adm_table_name,
+                                                             col_tuples)
 
-            create_string = ETL_funcs.create_table_create_string('rpa',
-                                                                 'sky',
-                                                                 adm_table_name,
-                                                                 col_tuples)
+        insert_string = ETL_funcs.create_bulk_insert_string('rpa',
+                                                            'sky',
+                                                            adm_table_name,
+                                                            'C:/Reports/Script Files/Skyward_DB_ETLs/temp_batch.csv')
 
-            # insert_string = ETL_funcs.create_table_insert_string('rpa',
-            #                                                      'sky',
-            #                                                      adm_table_name,
-            #                                                      col_names)
+        adm_cursor.execute(drop_string)
+        adm_cursor.execute(create_string)
 
-            insert_string = ETL_funcs.create_bulk_insert_string('rpa',
-                                                                'sky',
-                                                                adm_table_name,
-                                                                'C:/Reports/Script Files/Skyward_DB_ETLs/temp_batch.csv')
+        sql_fetch = f'SELECT * FROM {table}'
+        row_count_fetch = f'SELECT COUNT(*) FROM {table}'
 
-            adm_cursor.execute(drop_string)
-            adm_cursor.execute(create_string)
-            # adm_cnxn.commit()
+        sky_cursor.execute(row_count_fetch)
+        row_count = sky_cursor.fetchall()
 
-            sql_fetch = f'SELECT * FROM {table}'
-            row_count_fetch = f'SELECT COUNT(*) FROM {table}'
+        sky_cursor.execute(sql_fetch)
+        batch_count = 1
 
-            sky_cursor.execute(row_count_fetch)
-            row_count = sky_cursor.fetchall()
+        while True:
+            results = sky_cursor.fetchmany(10000)
+            clean_results = ETL_funcs.clean_params(adm_table_name, bypass_dict, results)
+            with open('temp_batch.csv', 'w', newline = '') as fp:
+                csv_writer = csv.writer(fp, delimiter = '|')
+                csv_writer.writerows(clean_results)
+            if not results:
+                print('End of Results')
+                break
+            print(f'Inserting batch {batch_count} into table rpa.sky.{adm_table_name}')
+            print(f'Table rows {(batch_count * 10000) - 9999} - {batch_count * 10000} out of {row_count[0][0]}')
+            adm_cursor.execute(insert_string)
+            batch_count += 1
 
-            sky_cursor.execute(sql_fetch)
-            batch_count = 1
-
-            while True:
-                results = sky_cursor.fetchmany(10000)
-                clean_results = ETL_funcs.clean_params(adm_table_name, bypass_dict, results)
-                with open('temp_batch.csv', 'w', newline = '') as fp:
-                    csv_writer = csv.writer(fp, delimiter = '|')
-                    csv_writer.writerows(clean_results)
-                if not results:
-                    print('End of Results')
-                    break
-                print(f'Inserting batch {batch_count} into table rpa.sky.{adm_table_name}')
-                print(f'Table rows {(batch_count * 10000) - 9999} - {batch_count * 10000} out of {row_count[0][0]}')
-                adm_cursor.execute(insert_string)
-                batch_count += 1
-
-            # while True:
-            #     results = sky_cursor.fetchmany(10000)
-            #     clean_results = ETL_funcs.clean_params(adm_table_name, bypass_dict, results)
-            #     if not results:
-            #         print('End of Table')
-            #         break
-            #     print(f'Inserting batch {batch_count} into table rpa.sky.{adm_table_name}')
-            #     adm_cursor.executemany(insert_string, [row for row in clean_results])
-            #     adm_cnxn.commit()
-            #     batch_count += 1
-
-            adm_cnxn.commit()
+        adm_cnxn.commit()
 
 
         else:
