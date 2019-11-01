@@ -103,7 +103,3 @@ if __name__ == '__main__':
             batch_count += 1
 
         adm_cnxn.commit()
-
-
-        else:
-            pass
