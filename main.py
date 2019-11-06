@@ -8,7 +8,7 @@ import pprint
 
 
 config = configparser.ConfigParser()
-config.read('config_files/config.ini')
+config.read('C:/Reports/Script Files/Skyward_DB_ETLs/config_files/config.ini')
 
 skyward_driver = config['Skyward_DB']['Driver']
 skyward_hostname = config['Skyward_DB']['HOST']
@@ -45,7 +45,6 @@ ew_table_list_path = config['Table_Lists']['Entry_Withdrawal']
 course_table_list_path = config['Table_Lists']['Course_Schedule']
 
 bypass_config_path = 'C:/Reports/Script Files/Skyward_DB_ETLs/config_files/column_bypass_config.csv'
-
 
 if __name__ == '__main__':
     sky_cnxn, sky_cursor = ETL_funcs.db_connect(skyward_conn_string)
@@ -90,7 +89,7 @@ if __name__ == '__main__':
         while True:
             results = sky_cursor.fetchmany(10000)
             clean_results = ETL_funcs.clean_params(adm_table_name, bypass_dict, results)
-            with open('temp_batch.csv', 'w', newline = '') as fp:
+            with open('C:/Reports/Script Files/Skyward_DB_ETLs/temp_batch.csv', 'w', newline = '') as fp:
                 csv_writer = csv.writer(fp, delimiter = '|')
                 csv_writer.writerows(clean_results)
             if not results:
