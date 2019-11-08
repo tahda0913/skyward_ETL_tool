@@ -94,7 +94,7 @@ if __name__ == '__main__':
                 csv_writer.writerows(clean_results)
             if not results:
                 print('End of Results')
-                os.remove('temp_batch.csv')
+                os.remove('C:/Reports/Script Files/Skyward_DB_ETLs/temp_batch.csv')
                 break
             print(f'Inserting batch {batch_count} into table rpa.sky.{adm_table_name}')
             print(f'Table rows {(batch_count * 10000) - 9999} - {batch_count * 10000} out of {row_count[0][0]}')
