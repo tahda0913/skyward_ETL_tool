@@ -1,10 +1,13 @@
 import configparser
 import csv
-import ETL_funcs
 import os
+
+import sys
+from sys import argv
+
+import ETL_funcs
 from ETL_funcs import clean_list_items
 from ETL_funcs import ResultIter
-import pprint
 
 
 config = configparser.ConfigParser()
@@ -41,8 +44,13 @@ adm_conn_string = f"""
                   Pwd={adm_pwd};
                   """
 
-ew_table_list_path = config['Table_Lists']['Entry_Withdrawal']
-course_table_list_path = config['Table_Lists']['Course_Schedule']
+if argv[1] == 'student_ew':
+    table_list_path = config['Table_Lists']['Entry_Withdrawal']
+elif argv[1] == 'courses':
+    table_list_path = config['Table_Lists']['Course_Schedule']
+else:
+    print('Error: Table List Variable not recognized')
+    sys.exit()
 
 bypass_config_path = 'C:/Reports/Script Files/Skyward_DB_ETLs/config_files/column_bypass_config.csv'
 
@@ -52,7 +60,7 @@ if __name__ == '__main__':
 
     adm_cursor.fast_executemany = True
 
-    sky_tables, adm_tables = ETL_funcs.retrieve_table_names(ew_table_list_path)
+    sky_tables, adm_tables = ETL_funcs.retrieve_table_names(table_list_path)
     clean_adm_table_names = clean_list_items(adm_tables)
 
     for i, table in enumerate(sky_tables):
