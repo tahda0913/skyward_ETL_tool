@@ -48,6 +48,8 @@ if argv[1] == 'student_ew':
     table_list_path = config['Table_Lists']['Entry_Withdrawal']
 elif argv[1] == 'courses':
     table_list_path = config['Table_Lists']['Course_Schedule']
+elif argv[1] == 'demographics':
+    table_list_path = config['Table_Lists']['Demographics']
 else:
     print('Error: Table List Variable not recognized')
     sys.exit()
