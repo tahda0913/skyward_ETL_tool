@@ -1,3 +1,6 @@
 temp_batch.csv
 __pycache__/
 *.bat
+skyward_table_explore.py
+table_explorer.csv
+demographics_tl.txt
