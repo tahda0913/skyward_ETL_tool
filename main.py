@@ -50,6 +50,10 @@ elif argv[1] == 'courses':
     table_list_path = config['Table_Lists']['Course_Schedule']
 elif argv[1] == 'demographics':
     table_list_path = config['Table_Lists']['Demographics']
+elif argv[1] == 'custom_forms':
+    table_list_path = config['Table_Lists']['Custom_Forms']
+elif argv[1] == 'grades':
+    table_list_path = config['Table_Lists']['Grades']
 else:
     print('Error: Table List Variable not recognized')
     sys.exit()
@@ -99,6 +103,7 @@ if __name__ == '__main__':
         while True:
             results = sky_cursor.fetchmany(10000)
             clean_results = ETL_funcs.clean_params(adm_table_name, bypass_dict, results)
+            print(f'Writing batch {batch_count} to csv')
             with open('C:/Reports/Script Files/Skyward_DB_ETLs/temp_batch.csv', 'w', newline = '') as fp:
                 csv_writer = csv.writer(fp, delimiter = '|')
                 csv_writer.writerows(clean_results)
