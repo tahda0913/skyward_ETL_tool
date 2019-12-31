@@ -52,6 +52,9 @@ elif argv[1] == 'demographics':
     table_list_path = config['Table_Lists']['Demographics']
 elif argv[1] == 'custom_forms':
     table_list_path = config['Table_Lists']['Custom_Forms']
+elif argv[1] == 'form_data':
+    table_list_path = config['Table_Lists']['Form_Data']
+    filter = """WHERE "QUDTBL-TABLE-ID" IN (3, 39)"""
 elif argv[1] == 'grades':
     table_list_path = config['Table_Lists']['Grades']
 else:
@@ -91,8 +94,14 @@ if __name__ == '__main__':
         adm_cursor.execute(drop_string)
         adm_cursor.execute(create_string)
 
-        sql_fetch = f'SELECT * FROM {table}'
-        row_count_fetch = f'SELECT COUNT(*) FROM {table}'
+        if argv[1] == 'form_data':
+            sql_fetch = f'SELECT * FROM {table} {filter}'
+        else:
+            sql_fetch = f'SELECT * FROM {table}'
+        if argv[1] == 'form_data':
+            row_count_fetch = f'SELECT COUNT(*) FROM {table} {filter}'
+        else:
+            row_count_fetch = f'SELECT COUNT(*) FROM {table}'
 
         sky_cursor.execute(row_count_fetch)
         row_count = sky_cursor.fetchall()
@@ -101,18 +110,21 @@ if __name__ == '__main__':
         batch_count = 1
 
         while True:
-            results = sky_cursor.fetchmany(10000)
+            results = sky_cursor.fetchmany(100000)
             clean_results = ETL_funcs.clean_params(adm_table_name, bypass_dict, results)
             print(f'Writing batch {batch_count} to csv')
-            with open('C:/Reports/Script Files/Skyward_DB_ETLs/temp_batch.csv', 'w', newline = '') as fp:
+
+            with open('C:/Reports/Script Files/Skyward_DB_ETLs/temp_batch.csv', 'w', newline = '', encoding='utf-8') as fp:
                 csv_writer = csv.writer(fp, delimiter = '|')
                 csv_writer.writerows(clean_results)
+
             if not results:
                 print('End of Results')
                 os.remove('C:/Reports/Script Files/Skyward_DB_ETLs/temp_batch.csv')
                 break
+
             print(f'Inserting batch {batch_count} into table rpa.sky.{adm_table_name}')
-            print(f'Table rows {(batch_count * 10000) - 9999} - {batch_count * 10000} out of {row_count[0][0]}')
+            print(f'Table rows {(batch_count * 100000) - 99999} - {batch_count * 100000} out of {row_count[0][0]}')
             adm_cursor.execute(insert_string)
             batch_count += 1
 
