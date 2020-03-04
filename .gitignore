@@ -4,3 +4,4 @@ __pycache__/
 skyward_table_explore.py
 table_explorer.csv
 demographics_tl.txt
+config.ini

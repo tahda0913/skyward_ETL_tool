@@ -52,9 +52,9 @@ elif argv[1] == 'demographics':
     table_list_path = config['Table_Lists']['Demographics']
 elif argv[1] == 'custom_forms':
     table_list_path = config['Table_Lists']['Custom_Forms']
-elif argv[1] == 'form_data':
-    table_list_path = config['Table_Lists']['Form_Data']
-    filter = """WHERE "QUDTBL-TABLE-ID" IN (3, 39)"""
+elif argv[1] == 'ELP_form':
+    table_list_path = config['Table_Lists']['ELP_form']
+    filter = """WHERE "QUDTBL-TABLE-ID" = 39"""
 elif argv[1] == 'grades':
     table_list_path = config['Table_Lists']['Grades']
 else:
